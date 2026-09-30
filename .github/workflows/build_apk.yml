@@ -1,0 +1,45 @@
+name: Flutter Build Release APK
+
+on:
+  push:
+  # Puedes cambiar la rama según tu preferencia (main, master, develop)
+    branches: [ "main" ] 
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Compilar APK en Docker
+    runs-on: ubuntu-latest
+
+    # Definimos el uso de un contenedor con Flutter y Android SDK preinstalados
+    container:
+      image: ghcr.io/cirruslabs/flutter:stable # O puedes usar alguna genérica de cirruslabs o similar con SDK Android
+
+    defaults:
+      run:
+        working-directory: test_pipeline_github_actions
+
+    steps:
+      # 1. Clonar el repositorio
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      # 2. Configurar permisos seguros para git en el contenedor de Docker
+      - name: Configurar Git Safe Directory
+        run: git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+
+      # 3. Obtener dependencias del proyecto
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      # 4. Compilar el APK en modo Release
+      - name: Compilar APK Release
+        run: flutter build apk --release
+
+      # 5. Subir el APK generado como artefacto descargable de GitHub
+      - name: Subir Artifact APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: test_pipeline_github_actions/build/app/outputs/flutter-apk/app-release.apk
