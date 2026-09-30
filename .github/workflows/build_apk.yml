@@ -25,9 +25,11 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      # 2. Configurar permisos seguros para git en el contenedor de Docker
+      # 2. Dar permisos y configurar Git Safe Directory para evitar bloqueos del contenedor
       - name: Configurar Git Safe Directory
-        run: git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+        run: |
+          git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+          git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}/test_pipeline_github_actions
 
       # 3. Obtener dependencias del proyecto
       - name: Instalar dependencias
@@ -37,7 +39,7 @@ jobs:
       - name: Compilar APK Release
         run: flutter build apk --release
 
-      # 5. Subir el APK generado como artefacto descargable de GitHub
+      # 5. Subir el APK generado como artefacto descargable
       - name: Subir Artifact APK
         uses: actions/upload-artifact@v4
         with:
